@@ -3,6 +3,8 @@ if (document.querySelector('#map')) setupMap();
 initNavigation();
 initMotion();
 initInstagram();
+initLearning();
+initResources();
 
 function initNavigation() {
   const toggle = document.querySelector('.menu-toggle');
@@ -87,13 +89,33 @@ function initInstagram() {
       quote.style.maxWidth = '540px';
       quote.style.minWidth = '0';
       quote.style.width = '100%';
+      const emblem = document.createElement('img');
+      emblem.src = 'assets/logo-emblem.svg';
+      emblem.alt = '';
+      emblem.width = 160;
+      emblem.height = 92;
+      const heading = document.createElement('p');
+      heading.textContent = 'Eyes of BC on Instagram';
+      quote.append(emblem, heading);
       const link = document.createElement('a');
       link.href = url;
-      link.textContent = 'View this post on Instagram';
+      link.textContent = 'View this post on Instagram ↗';
       quote.append(link);
       grid.append(quote);
     }
     fallback.hidden = true;
+    const controls = document.querySelector('.instagram-controls');
+    if (controls && posts.length > 1) {
+      controls.hidden = false;
+      controls.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          const items = [...grid.children];
+          const current = items.reduce((best, item, index) => Math.abs(item.offsetLeft - items[0].offsetLeft - grid.scrollLeft) < Math.abs(items[best].offsetLeft - items[0].offsetLeft - grid.scrollLeft) ? index : best, 0);
+          const index = (current + Number(button.dataset.direction) + items.length) % items.length;
+          grid.scrollTo({left: items[index].offsetLeft - items[0].offsetLeft, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+        });
+      });
+    }
     if (!('IntersectionObserver' in window)) { loadEmbeds(); return; }
     const observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return;
@@ -114,42 +136,111 @@ function initInstagram() {
     .catch(() => {});
 }
 
+function initLearning() {
+  const nav = document.querySelector('.module-nav');
+  if (!nav) return;
+  const tabs = [...nav.querySelectorAll('a')];
+  const panels = [...document.querySelectorAll('.module-panel')];
+  nav.setAttribute('role', 'tablist');
+  nav.setAttribute('aria-orientation', 'vertical');
+  tabs.forEach(tab => {
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', tab.hash.slice(1));
+  });
+  panels.forEach(panel => {
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', 'tab-' + panel.id);
+    panel.tabIndex = 0;
+  });
+  function select(tab, focus = false) {
+    tabs.forEach(item => {
+      const active = item === tab;
+      item.setAttribute('aria-selected', String(active));
+      item.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach(panel => panel.hidden = panel.id !== tab.hash.slice(1));
+    if (focus) tab.focus();
+  }
+  const fromHash = () => select(tabs.find(tab => tab.hash === location.hash) || tabs[0]);
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', event => {
+      event.preventDefault();
+      select(tab);
+      history.replaceState(null, '', tab.hash);
+    });
+    tab.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (i + 1) % tabs.length;
+      if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+      if (next === undefined) return;
+      event.preventDefault();
+      select(tabs[next], true);
+      history.replaceState(null, '', tabs[next].hash);
+    });
+  });
+}
+
+function initResources() {
+  const filters = document.querySelector('.resource-filters');
+  if (!filters) return;
+  const buttons = [...filters.querySelectorAll('button')];
+  const cards = [...document.querySelectorAll('.resources-page .resource-card')];
+  const count = document.querySelector('.resource-count');
+  filters.hidden = false;
+  function show(category) {
+    let total = 0;
+    cards.forEach(card => {
+      card.hidden = category !== 'All' && card.dataset.category !== category;
+      if (!card.hidden) total++;
+    });
+    buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === category)));
+    count.textContent = `${total} ${total === 1 ? 'resource' : 'resources'}`;
+  }
+  buttons.forEach(button => button.addEventListener('click', () => show(button.dataset.filter)));
+  show('All');
+}
+
 async function setupMap() {
   const status = document.querySelector('#map-status');
   const listings = document.querySelector('#listings');
-  const controls = ['region', 'profession', 'coverage'];
+  const search = document.querySelector('#search');
+  const region = document.querySelector('#region');
+  const reset = document.querySelector('#reset-filters');
   let map, markers, route, providers = [], request = 0;
   if (window.L) {
-    map = L.map('map').setView([54, -125], 5);
+    map = L.map('map', {scrollWheelZoom: false}).setView([53.5, -124], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
     }).addTo(map);
     markers = L.layerGroup().addTo(map);
   }
-  const values = value => Array.isArray(value) ? value : String(value || '').split(',').map(x => x.trim()).filter(Boolean);
   const coordinates = item => typeof item.lat === 'number' && typeof item.lon === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lon) && Math.abs(item.lat) <= 90 && Math.abs(item.lon) <= 180;
-  const safeUrl = value => {
-    try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? url.href : null; }
-    catch { return null; }
-  };
-  function text(parent, tag, value) {
+  function text(parent, tag, value, className) {
     const node = document.createElement(tag);
     node.textContent = value;
+    if (className) node.className = className;
     parent.append(node);
     return node;
   }
   function link(parent, label, value) {
-    const url = safeUrl(value);
-    if (!url) return;
-    const node = text(parent, 'a', label);
-    node.href = url;
-    parent.append(document.createTextNode(' '));
+    try {
+      const url = new URL(value);
+      if (!['https:', 'http:', 'tel:'].includes(url.protocol)) return;
+      const node = text(parent, 'a', label);
+      node.href = url.href;
+      return node;
+    } catch { return; }
   }
   function button(parent, label, action) {
     const node = text(parent, 'button', label);
     node.type = 'button';
     node.addEventListener('click', action);
+    return node;
   }
   async function directions(item) {
     const current = ++request;
@@ -184,60 +275,82 @@ async function setupMap() {
     if (route) { map.removeLayer(route); route = null; }
     listings.replaceChildren();
     markers?.clearLayers();
-    const query = document.querySelector('#search').value.trim().toLowerCase();
-    const shown = providers.filter(item => controls.every(key => !document.getElementById(key).value || values(item[key]).includes(document.getElementById(key).value)) && [item.organization, item.city, item.address].join(' ').toLowerCase().includes(query));
-    status.textContent = providers.length ? (shown.length ? 'Select a resource for directions.' : 'No resources match these filters.') : 'Listings are being verified';
-    if (!map) status.textContent += ' The map could not load.';
-    for (const item of shown) {
+    const query = search.value.trim().toLowerCase();
+    const shown = providers.filter(item => (!region.value || item.region === region.value) && [item.organization, item.city, item.address, item.profession].join(' ').toLowerCase().includes(query));
+    reset.hidden = !query && !region.value;
+    status.textContent = `${shown.length} ${shown.length === 1 ? 'location' : 'locations'}`;
+    if (!map) status.textContent += ' · Map unavailable; location details are below.';
+    if (!shown.length) {
+      text(listings, 'h3', 'No matching locations');
+      text(listings, 'p', 'Try a different city or reset the filters. You can also use the provider directories below.');
+    }
+    shown.forEach((item, i) => {
       const article = document.createElement('article');
-      text(article, 'h3', item.organization);
-      text(article, 'p', [item.address, item.city, item.region].filter(Boolean).join(', '));
-      text(article, 'p', item.profession || 'Profession unconfirmed');
-      text(article, 'p', `Coverage: ${values(item.coverage).join(', ') || 'unconfirmed'}`);
-      text(article, 'p', 'Eligibility, referral, accessibility and languages: unconfirmed.');
-      text(article, 'p', `Last confirmed: ${item.last_confirmed || 'unconfirmed'}`);
-      if (item.phone) {
-        const phone = text(article, 'a', `Call ${item.organization}: ${item.phone}`);
-        phone.href = `tel:${String(item.phone).replace(/[^+\d]/g, '')}`;
-        article.append(document.createTextNode(' '));
-      }
-      link(article, `${item.organization} website`, item.website);
-      link(article, 'Provider source', item.source_url);
-      if (coordinates(item)) link(article, 'Open in Google Maps', `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}`);
+      const selectButton = text(article, 'button', item.city, 'listing-select');
+      selectButton.type = 'button';
+      selectButton.setAttribute('aria-pressed', 'false');
+      text(article, 'h3', item.organization.replace(', ' + item.city, ''));
+      text(article, 'p', item.profession, 'listing-type');
+      text(article, 'p', item.address, 'listing-address');
+      const links = document.createElement('div');
+      links.className = 'listing-links';
+      link(links, 'Call ↗', `tel:${String(item.phone).replace(/[^+\d]/g, '')}`);
+      link(links, 'Website ↗', item.website);
+      link(links, 'Directions ↗', `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.address + ', ' + item.city + ', BC')}`);
+      article.append(links);
+      const details = document.createElement('details');
+      text(details, 'summary', 'Before you visit');
+      text(details, 'p', 'Confirm appointments, coverage, referral requirements, accessibility and language support with the provider.');
+      link(details, 'Location source ↗', item.source_url);
+      text(details, 'p', `Location checked ${item.last_confirmed}.`, 'listing-reviewed');
+      article.append(details);
+      let marker;
+      const select = (fromMap = false) => {
+        listings.querySelectorAll('article').forEach(node => {
+          node.classList.remove('selected');
+          node.querySelector('.listing-select').setAttribute('aria-pressed', 'false');
+        });
+        markers?.eachLayer(layer => layer.getElement()?.classList.remove('active'));
+        article.classList.add('selected');
+        selectButton.setAttribute('aria-pressed', 'true');
+        if (marker) {
+          map.setView([item.lat, item.lon], 13);
+          marker.getElement()?.classList.add('active');
+          marker.openPopup();
+        }
+        if (fromMap) article.scrollIntoView({block: 'nearest'});
+      };
+      selectButton.addEventListener('click', () => select());
+      if (map && coordinates(item)) button(links, 'View map', () => { select(); document.querySelector('#map').scrollIntoView({block: 'center'}); });
       if (map && coordinates(item)) {
-        const marker = L.marker([item.lat, item.lon], {alt: item.organization, title: item.organization}).addTo(markers);
+        marker = L.marker([item.lat, item.lon], {
+          alt: item.organization, title: item.city,
+          icon: L.divIcon({className: 'map-pin', html: `<span>${i + 1}</span>`, iconSize: [32, 32], iconAnchor: [16, 32]})
+        }).addTo(markers);
         const popup = document.createElement('div');
         text(popup, 'strong', item.organization);
-        const select = () => {
-          listings.querySelectorAll('article').forEach(node => node.classList.remove('selected'));
-          article.classList.add('selected');
-          map.setView([item.lat, item.lon], 12);
-          marker.openPopup();
-        };
-        button(popup, 'Directions', () => { select(); directions(item); });
+        button(popup, 'Drive here', () => { select(); directions(item); });
         marker.bindPopup(popup);
-        marker.on('click', () => {
-          listings.querySelectorAll('article').forEach(node => node.classList.remove('selected'));
-          article.classList.add('selected');
-        });
-        button(article, 'Select', select);
-        button(article, 'Directions', () => { select(); directions(item); });
+        marker.on('click', () => select(true));
       }
       listings.append(article);
-    }
+    });
+    const points = shown.filter(coordinates).map(item => [item.lat, item.lon]);
+    if (map && points.length) map.fitBounds(points, {padding: [45, 45], maxZoom: 12});
+    else if (map) map.setView([53.5, -124], 5);
   }
   try {
     const response = await fetch('data/providers.json');
     if (!response.ok) throw new Error('data');
     providers = await response.json();
     if (!Array.isArray(providers)) throw new Error('data');
-    for (const key of controls) {
-      const select = document.getElementById(key);
-      const options = [...new Set(providers.flatMap(item => values(item[key])))].sort();
-      options.forEach(value => select.add(new Option(value, value)));
-      select.addEventListener('change', render);
-    }
-    document.querySelector('#search').addEventListener('input', render);
+    [...new Set(providers.map(item => item.region).filter(Boolean))].sort().forEach(value => region.add(new Option(value, value)));
+    region.addEventListener('change', render);
+    search.addEventListener('input', render);
+    reset.addEventListener('click', () => { search.value = ''; region.value = ''; render(); search.focus(); });
     render();
-  } catch { status.textContent = 'Resources could not load. Try again later.'; }
+  } catch {
+    status.textContent = 'Locations could not load.';
+    text(listings, 'p', 'Use the provider directories below to continue your search.');
+  }
 }

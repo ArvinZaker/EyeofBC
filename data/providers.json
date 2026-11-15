@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "organization": "Vision Loss Rehabilitation Canada, Abbotsford",
+    "profession": "Vision rehabilitation",
+    "address": "Unit 120, 2491 McCallum Rd",
+    "city": "Abbotsford",
+    "region": "Fraser Valley",
+    "phone": "1-844-887-8572",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 49.0474531,
+    "lon": -122.2939924,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=2491+McCallum+Rd%2C+Abbotsford%2C+BC&maxResults=1&outputSRS=4326"
+  },
+  {
+    "organization": "Vision Loss Rehabilitation Canada, New Westminster",
+    "profession": "Vision rehabilitation",
+    "address": "Suite 201A, Royal City Centre, 610 6th St",
+    "city": "New Westminster",
+    "region": "Lower Mainland",
+    "phone": "1-844-887-8572",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 49.2134839,
+    "lon": -122.9217729,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=610+6th+St%2C+New+Westminster%2C+BC&maxResults=1&outputSRS=4326"
+  },
+  {
+    "organization": "Vision Loss Rehabilitation Canada, Kelowna",
+    "profession": "Vision rehabilitation",
+    "address": "Unit 302, 546 Leon Ave",
+    "city": "Kelowna",
+    "region": "Interior",
+    "phone": "1-844-887-8572",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 49.8847241,
+    "lon": -119.4917626,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=546+Leon+Ave%2C+Kelowna%2C+BC&maxResults=1&outputSRS=4326"
+  },
+  {
+    "organization": "Vision Loss Rehabilitation Canada, Prince George",
+    "profession": "Vision rehabilitation",
+    "address": "Suite 502, 550 Victoria St",
+    "city": "Prince George",
+    "region": "Northern BC",
+    "phone": "1-844-887-8572",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 53.9157309,
+    "lon": -122.7505285,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=550+Victoria+St%2C+Prince+George%2C+BC&maxResults=1&outputSRS=4326"
+  },
+  {
+    "organization": "Vision Loss Rehabilitation Canada, Kamloops",
+    "profession": "Vision rehabilitation",
+    "address": "Unit 190, 546 St Paul St",
+    "city": "Kamloops",
+    "region": "Interior",
+    "phone": "250-374-8080",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 50.6742308,
+    "lon": -120.3282766,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=546+St+Paul+St%2C+Kamloops%2C+BC&maxResults=1&outputSRS=4326"
+  },
+  {
+    "organization": "Vision Loss Rehabilitation Canada, Victoria",
+    "profession": "Vision rehabilitation",
+    "address": "Unit 102, 1675 Douglas St",
+    "city": "Victoria",
+    "region": "Vancouver Island",
+    "phone": "1-844-887-8572",
+    "website": "https://visionlossrehab.ca/en/locations",
+    "source_url": "https://visionlossrehab.ca/en/locations",
+    "last_confirmed": "2026-11-14",
+    "lat": 48.4291026,
+    "lon": -123.3641427,
+    "coordinate_source": "https://geocoder.api.gov.bc.ca/addresses.json?addressString=1675+Douglas+St%2C+Victoria%2C+BC&maxResults=1&outputSRS=4326"
+  }
+]

@@ -81,7 +81,21 @@ function initInstagram() {
   function renderPosts(urls) {
     const posts = urls.map(postUrl).filter(Boolean);
     if (!posts.length) return;
-    for (const url of posts) {
+    posts.forEach((url, i) => {
+      const panel = document.createElement('article');
+      panel.className = 'social-panel';
+      const topline = document.createElement('div');
+      topline.className = 'panel-topline';
+      const glyph = document.createElement('span');
+      glyph.className = 'social-glyph';
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.textContent = '◎';
+      const label = document.createElement('span');
+      label.textContent = `Instagram · Post ${i + 1}`;
+      const profile = document.createElement('a');
+      profile.href = 'https://www.instagram.com/eyesofbritishcolumbia/';
+      profile.textContent = '@eyesofbritishcolumbia ↗';
+      topline.append(glyph, label, profile);
       const quote = document.createElement('blockquote');
       quote.className = 'instagram-media';
       quote.dataset.instgrmPermalink = url;
@@ -96,26 +110,17 @@ function initInstagram() {
       emblem.height = 92;
       const heading = document.createElement('p');
       heading.textContent = 'Eyes of BC on Instagram';
-      quote.append(emblem, heading);
       const link = document.createElement('a');
       link.href = url;
       link.textContent = 'View this post on Instagram ↗';
-      quote.append(link);
-      grid.append(quote);
-    }
-    fallback.hidden = true;
-    const controls = document.querySelector('.instagram-controls');
-    if (controls && posts.length > 1) {
-      controls.hidden = false;
-      controls.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-          const items = [...grid.children];
-          const current = items.reduce((best, item, index) => Math.abs(item.offsetLeft - items[0].offsetLeft - grid.scrollLeft) < Math.abs(items[best].offsetLeft - items[0].offsetLeft - grid.scrollLeft) ? index : best, 0);
-          const index = (current + Number(button.dataset.direction) + items.length) % items.length;
-          grid.scrollTo({left: items[index].offsetLeft - items[0].offsetLeft, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
-        });
-      });
-    }
+      const profileLink = document.createElement('a');
+      profileLink.href = 'https://www.instagram.com/eyesofbritishcolumbia/';
+      profileLink.textContent = 'Instagram profile (@eyesofbritishcolumbia) ↗';
+      quote.append(emblem, heading, link, profileLink);
+      panel.append(topline, quote);
+      grid.append(panel);
+    });
+    if (fallback) fallback.hidden = true;
     if (!('IntersectionObserver' in window)) { loadEmbeds(); return; }
     const observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return;
@@ -281,59 +286,66 @@ async function setupMap() {
     status.textContent = `${shown.length} ${shown.length === 1 ? 'location' : 'locations'}`;
     if (!map) status.textContent += ' · Map unavailable; location details are below.';
     if (!shown.length) {
-      text(listings, 'h3', 'No matching locations');
-      text(listings, 'p', 'Try a different city or reset the filters. You can also use the provider directories below.');
+      const empty = text(listings, 'li', '');
+      text(empty, 'h3', 'No matching locations');
+      text(empty, 'p', 'Try a different city or reset the filters. You can also use the provider directories below.');
     }
-    shown.forEach((item, i) => {
-      const article = document.createElement('article');
-      const selectButton = text(article, 'button', item.city, 'listing-select');
+    shown.forEach(item => {
+      const li = document.createElement('li');
+      const selectButton = text(li, 'button', item.city, 'listing-select');
       selectButton.type = 'button';
       selectButton.setAttribute('aria-pressed', 'false');
-      text(article, 'h3', item.organization.replace(', ' + item.city, ''));
-      text(article, 'p', item.profession, 'listing-type');
-      text(article, 'p', item.address, 'listing-address');
+      text(li, 'h3', item.organization.replace(', ' + item.city, ''));
+      text(li, 'p', item.profession, 'listing-type');
+      text(li, 'p', item.address, 'listing-address');
+      const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.address + ', ' + item.city + ', BC')}`;
       const links = document.createElement('div');
       links.className = 'listing-links';
       link(links, 'Call ↗', `tel:${String(item.phone).replace(/[^+\d]/g, '')}`);
       link(links, 'Website ↗', item.website);
-      link(links, 'Directions ↗', `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.address + ', ' + item.city + ', BC')}`);
-      article.append(links);
+      link(links, 'Directions ↗', gmapsUrl);
+      li.append(links);
       const details = document.createElement('details');
       text(details, 'summary', 'Before you visit');
       text(details, 'p', 'Confirm appointments, coverage, referral requirements, accessibility and language support with the provider.');
       link(details, 'Location source ↗', item.source_url);
       text(details, 'p', `Location checked ${item.last_confirmed}.`, 'listing-reviewed');
-      article.append(details);
+      li.append(details);
       let marker;
       const select = (fromMap = false) => {
-        listings.querySelectorAll('article').forEach(node => {
+        listings.querySelectorAll('li').forEach(node => {
           node.classList.remove('selected');
-          node.querySelector('.listing-select').setAttribute('aria-pressed', 'false');
+          node.querySelector('.listing-select')?.setAttribute('aria-pressed', 'false');
         });
-        markers?.eachLayer(layer => layer.getElement()?.classList.remove('active'));
-        article.classList.add('selected');
+        li.classList.add('selected');
         selectButton.setAttribute('aria-pressed', 'true');
         if (marker) {
-          map.setView([item.lat, item.lon], 13);
-          marker.getElement()?.classList.add('active');
+          if (!fromMap) map.setView([item.lat, item.lon], 13);
           marker.openPopup();
         }
-        if (fromMap) article.scrollIntoView({block: 'nearest'});
+        if (fromMap) li.scrollIntoView({block: 'nearest'});
       };
       selectButton.addEventListener('click', () => select());
       if (map && coordinates(item)) button(links, 'View map', () => { select(); document.querySelector('#map').scrollIntoView({block: 'center'}); });
       if (map && coordinates(item)) {
         marker = L.marker([item.lat, item.lon], {
-          alt: item.organization, title: item.city,
-          icon: L.divIcon({className: 'map-pin', html: `<span>${i + 1}</span>`, iconSize: [32, 32], iconAnchor: [16, 32]})
+          alt: item.organization, title: item.city
         }).addTo(markers);
         const popup = document.createElement('div');
         text(popup, 'strong', item.organization);
-        button(popup, 'Drive here', () => { select(); directions(item); });
+        text(popup, 'p', item.address);
+        const popupLinks = document.createElement('p');
+        link(popupLinks, item.phone, `tel:${String(item.phone).replace(/[^+\d]/g, '')}`);
+        popupLinks.append(' · ');
+        link(popupLinks, 'Website ↗', item.website);
+        popupLinks.append(' · ');
+        link(popupLinks, 'Directions ↗', gmapsUrl);
+        popup.append(popupLinks);
+        button(popup, 'Drive here', () => { select(true); directions(item); });
         marker.bindPopup(popup);
         marker.on('click', () => select(true));
       }
-      listings.append(article);
+      listings.append(li);
     });
     const points = shown.filter(coordinates).map(item => [item.lat, item.lon]);
     if (map && points.length) map.fitBounds(points, {padding: [45, 45], maxZoom: 12});
@@ -351,6 +363,7 @@ async function setupMap() {
     render();
   } catch {
     status.textContent = 'Locations could not load.';
-    text(listings, 'p', 'Use the provider directories below to continue your search.');
+    const errLi = text(listings, 'li', '');
+    text(errLi, 'p', 'Use the provider directories below to continue your search.');
   }
 }

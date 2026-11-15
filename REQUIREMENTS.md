@@ -1,0 +1,7 @@
+# Website prototype
+
+- [x] Continue the existing Eyes of BC website as a polished prototype. Preserved the supplied palette, logos, no-photo direction, and page content. Reviewed HTML text differences and the saved CSS; existing logos were retained from the incoming working tree.
+- [x] Improve the home page hierarchy and responsive layouts across the existing pages. Saved the illustrated hero, quick links, outreach layout and team grid. All seven pages passed shared navigation, active-page and local-link checks. CSS includes layouts at 1099px, 760px and 380px and reduced-motion support. Visual browser layout remains unverified.
+- [x] Keep provider and Instagram data empty until verified entries are supplied. Parsed both saved JSON files and confirmed each contains exactly an empty array.
+- [x] Check the prototype using the existing static server and JavaScript syntax checks. All 13 HTML/asset requests returned HTTP 200 with exact local bytes. HTML parsing verified balanced tags, unique IDs, one h1 and anchor targets on every page. SVG XML, CSS brace checks, node --check and git diff --check passed. A Node VM check verified menu opening/closing, Escape and focus return, navigation-link closure and viewport-change closure. Live map tiles, location/routing, Instagram embeds and visual browser layout were not exercised.
+- [ ] Commit and push the prototype to the existing GitHub repository for GitHub Pages. Remaining: push main, verify the remote commit and verify the public site serves the prototype.

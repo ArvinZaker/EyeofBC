@@ -1,5 +1,118 @@
 "use strict";
 if (document.querySelector('#map')) setupMap();
+initNavigation();
+initMotion();
+initInstagram();
+
+function initNavigation() {
+  const toggle = document.querySelector('.menu-toggle');
+  const nav = document.querySelector('#main-nav');
+  if (!toggle || !nav) return;
+  toggle.hidden = false;
+  function closeMenu() {
+    toggle.setAttribute('aria-expanded', 'false');
+    nav.classList.remove('is-open');
+  }
+  toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('is-open', open);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      closeMenu();
+      toggle.focus();
+    }
+  });
+  nav.addEventListener('click', event => {
+    if (event.target.closest('a')) closeMenu();
+  });
+  window.matchMedia('(min-width: 1100px)').addEventListener('change', closeMenu);
+}
+
+function initMotion() {
+  const header = document.querySelector('header');
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, {passive: true});
+  onScroll();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries, obs) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('is-visible');
+      obs.unobserve(entry.target);
+    }
+  }, {threshold: 0.1, rootMargin: '0px 0px -40px 0px'});
+  document.querySelectorAll('.cards').forEach(grid => {
+    [...grid.children].forEach((card, i) => card.style.setProperty('--d', `${Math.min(i, 3) * 80}ms`));
+  });
+  document.querySelectorAll('main .card, .pathways > a').forEach(el => {
+    el.classList.add('reveal');
+    observer.observe(el);
+  });
+}
+
+function initInstagram() {
+  const grid = document.querySelector('#instagram-posts');
+  if (!grid) return;
+  const fallback = document.querySelector('#instagram-fallback');
+  const section = document.querySelector('#latest-updates');
+  const postUrl = value => {
+    try {
+      const url = new URL(value);
+      const valid = url.protocol === 'https:' && url.hostname === 'www.instagram.com' && /^\/(p|reel)\/[\w-]+\/?$/.test(url.pathname);
+      return valid ? url.href : null;
+    } catch { return null; }
+  };
+  let embedRequested = false;
+  function loadEmbeds() {
+    if (embedRequested) return;
+    embedRequested = true;
+    const processEmbeds = () => window.instgrm?.Embeds.process();
+    if (window.instgrm) { processEmbeds(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://www.instagram.com/embed.js';
+    script.async = true;
+    script.onload = processEmbeds;
+    document.body.append(script);
+  }
+  function renderPosts(urls) {
+    const posts = urls.map(postUrl).filter(Boolean);
+    if (!posts.length) return;
+    for (const url of posts) {
+      const quote = document.createElement('blockquote');
+      quote.className = 'instagram-media';
+      quote.dataset.instgrmPermalink = url;
+      quote.dataset.instgrmVersion = '14';
+      quote.style.maxWidth = '540px';
+      quote.style.minWidth = '0';
+      quote.style.width = '100%';
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = 'View this post on Instagram';
+      quote.append(link);
+      grid.append(quote);
+    }
+    fallback.hidden = true;
+    if (!('IntersectionObserver' in window)) { loadEmbeds(); return; }
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      observer.disconnect();
+      loadEmbeds();
+    }, {rootMargin: '600px 0px'});
+    observer.observe(section);
+  }
+  fetch('data/instagram.json')
+    .then(response => {
+      if (!response.ok) throw new Error('instagram');
+      return response.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data)) throw new Error('instagram');
+      renderPosts(data);
+    })
+    .catch(() => {});
+}
 
 async function setupMap() {
   const status = document.querySelector('#map-status');

@@ -39,7 +39,7 @@ Example only. This record is not a provider and must not be published in the dat
 }
 ```
 
-Do not claim that a provider accepts new patients, offers free care or accepts a benefit unless it has been confirmed. Record the source and confirmation date. Update the visible last-reviewed placeholder in `map.html` after review. Eligibility, referrals, accessibility and languages remain unconfirmed in this data schema.
+Do not claim that a provider accepts new patients, offers free care or accepts a benefit unless it has been confirmed. Record the source and confirmation date. Replace the visible provider-review message in `map.html` with the confirmation date after review. Eligibility, referrals, accessibility and languages remain unconfirmed in this data schema.
 
 Leaflet 1.9.4 loads from its distribution CDN with SRI. The map uses OpenStreetMap tiles. Directions request browser location only after a visitor presses Directions and send the coordinates to the public OSRM demo service. Each listing with valid coordinates also links to Google Maps directions without an API key. These services need a network connection. The site shows a message if location or routing fails. Location access needs HTTPS or localhost.
 
@@ -57,6 +57,22 @@ The five equity statistics carry the supplied source line, Health Canada, Nation
 
 The supplied founding year is omitted because it was marked unverified. The supplied faculty role for Dr. Colten Wendel remains unverified. The supplied Hoop for Sight copy gives 2026 and approximately $13,000; its note does not record a date. The featured research and research library await content.
 
+## Instagram posts
+
+The home page shows Instagram posts listed in `data/instagram.json`. The file ships as an empty array `[]`, which shows the follow link and the sentence "Latest posts on Instagram." instead.
+
+To add a post, open it on Instagram, copy its link (for example `https://www.instagram.com/p/POST_CODE/`, where POST_CODE is a placeholder), and paste it as a string inside the array. Separate entries with commas and keep the file a JSON array. Posts appear in the order listed. Only `https://www.instagram.com/p/` and `/reel/` links are used. Embeds load from instagram.com when the section nears the screen.
+
+## Motion
+
+Scroll reveals and the header shadow are in `css/style.css` and `js/main.js`. Each page sets a `js` class on `<html>` from a small inline script in its head, so content stays visible without JavaScript. Motion is turned off when the visitor's system requests reduced motion.
+
 ## Checks
 
 Use Python's html.parser to parse every HTML page and check local links, one h1 per page and the shared navigation. Parse `data/providers.json` as JSON. Check all site files for em dash characters and the removed page name. Use `node --check js/main.js` for JavaScript syntax. Browser layout, live tiles, location permission and external routing need separate manual checks.
+
+## Prototype design
+
+The site keeps the supplied navy, coastal blue, sage, ivory and gold palette and existing SVG logos. The home page uses an arched logo illustration, quick resource links, outreach cards, a compact team grid and a contact call to action. No photographs or additional dependencies are used. All pages share responsive navigation and footer links. The menu supports Escape, and navigation remains visible with JavaScript disabled. Research details remain a collapsible template until content is supplied.
+
+CSS and JavaScript URLs use a version query; change it when updating those files. Mobile layout rules cover the hero, cards, map filters and navigation. Visual browser checks and live map routing are separate from static link and JavaScript checks.

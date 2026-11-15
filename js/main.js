@@ -3,7 +3,6 @@ if (document.querySelector('#map')) setupMap();
 initNavigation();
 initMotion();
 initInstagram();
-initLearning();
 initResources();
 
 function initNavigation() {
@@ -58,7 +57,7 @@ function initInstagram() {
   const grid = document.querySelector('#instagram-posts');
   if (!grid) return;
   const fallback = document.querySelector('#instagram-fallback');
-  const section = document.querySelector('#latest-updates');
+  const section = document.querySelector('#our-work') || grid;
   const postUrl = value => {
     try {
       const url = new URL(value);
@@ -139,54 +138,6 @@ function initInstagram() {
       renderPosts(data);
     })
     .catch(() => {});
-}
-
-function initLearning() {
-  const nav = document.querySelector('.module-nav');
-  if (!nav) return;
-  const tabs = [...nav.querySelectorAll('a')];
-  const panels = [...document.querySelectorAll('.module-panel')];
-  nav.setAttribute('role', 'tablist');
-  nav.setAttribute('aria-orientation', 'vertical');
-  tabs.forEach(tab => {
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-controls', tab.hash.slice(1));
-  });
-  panels.forEach(panel => {
-    panel.setAttribute('role', 'tabpanel');
-    panel.setAttribute('aria-labelledby', 'tab-' + panel.id);
-    panel.tabIndex = 0;
-  });
-  function select(tab, focus = false) {
-    tabs.forEach(item => {
-      const active = item === tab;
-      item.setAttribute('aria-selected', String(active));
-      item.tabIndex = active ? 0 : -1;
-    });
-    panels.forEach(panel => panel.hidden = panel.id !== tab.hash.slice(1));
-    if (focus) tab.focus();
-  }
-  const fromHash = () => select(tabs.find(tab => tab.hash === location.hash) || tabs[0]);
-  fromHash();
-  window.addEventListener('hashchange', fromHash);
-  tabs.forEach((tab, i) => {
-    tab.addEventListener('click', event => {
-      event.preventDefault();
-      select(tab);
-      history.replaceState(null, '', tab.hash);
-    });
-    tab.addEventListener('keydown', event => {
-      let next;
-      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (i + 1) % tabs.length;
-      if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
-      if (event.key === 'Home') next = 0;
-      if (event.key === 'End') next = tabs.length - 1;
-      if (next === undefined) return;
-      event.preventDefault();
-      select(tabs[next], true);
-      history.replaceState(null, '', tabs[next].hash);
-    });
-  });
 }
 
 function initResources() {

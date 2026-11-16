@@ -1,9 +1,26 @@
 "use strict";
+initTheme();
 if (document.querySelector('#map')) setupMap();
 initNavigation();
 initMotion();
 initInstagram();
 initResources();
+
+function initTheme() {
+  const toggle = document.querySelector('.theme-toggle');
+  if (!toggle) return;
+  const root = document.documentElement;
+  const sync = theme => {
+    root.setAttribute('data-theme', theme);
+    toggle.setAttribute('aria-pressed', String(theme === 'dark'));
+  };
+  sync(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  toggle.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    sync(next);
+    try { localStorage.setItem('theme', next); } catch {}
+  });
+}
 
 function initNavigation() {
   const toggle = document.querySelector('.menu-toggle');
@@ -65,66 +82,64 @@ function initInstagram() {
       return valid ? url.href : null;
     } catch { return null; }
   };
+  function createCard(url) {
+    const quote = document.createElement('blockquote');
+    quote.className = 'instagram-media';
+    quote.dataset.instgrmPermalink = url;
+    quote.dataset.instgrmVersion = '14';
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'eyebrow';
+    eyebrow.textContent = '@eyesofbritishcolumbia';
+    const title = document.createElement('h3');
+    title.textContent = 'Community update';
+    const note = document.createElement('p');
+    note.textContent = 'View this post on Instagram.';
+    const link = document.createElement('a');
+    link.href = url;
+    link.textContent = 'View on Instagram ↗';
+    quote.append(eyebrow, title, note, link);
+    return quote;
+  }
+  function verifyEmbeds(panels) {
+    setTimeout(() => {
+      panels.forEach(({panel, url}) => {
+        const frame = panel.querySelector('iframe.instagram-media');
+        if (frame && frame.offsetHeight < 50) panel.replaceChildren(createCard(url));
+      });
+    }, 4000);
+  }
   let embedRequested = false;
-  function loadEmbeds() {
+  function loadEmbeds(panels) {
     if (embedRequested) return;
     embedRequested = true;
-    const processEmbeds = () => window.instgrm?.Embeds.process();
+    const processEmbeds = () => {
+      try { window.instgrm?.Embeds.process(); } catch {}
+      verifyEmbeds(panels);
+    };
     if (window.instgrm) { processEmbeds(); return; }
     const script = document.createElement('script');
     script.src = 'https://www.instagram.com/embed.js';
     script.async = true;
     script.onload = processEmbeds;
+    script.onerror = () => {};
     document.body.append(script);
   }
   function renderPosts(urls) {
     const posts = urls.map(postUrl).filter(Boolean);
     if (!posts.length) return;
-    posts.forEach((url, i) => {
+    const panels = posts.map(url => {
       const panel = document.createElement('article');
       panel.className = 'social-panel';
-      const topline = document.createElement('div');
-      topline.className = 'panel-topline';
-      const glyph = document.createElement('span');
-      glyph.className = 'social-glyph';
-      glyph.setAttribute('aria-hidden', 'true');
-      glyph.textContent = '◎';
-      const label = document.createElement('span');
-      label.textContent = `Instagram · Post ${i + 1}`;
-      const profile = document.createElement('a');
-      profile.href = 'https://www.instagram.com/eyesofbritishcolumbia/';
-      profile.textContent = '@eyesofbritishcolumbia ↗';
-      topline.append(glyph, label, profile);
-      const quote = document.createElement('blockquote');
-      quote.className = 'instagram-media';
-      quote.dataset.instgrmPermalink = url;
-      quote.dataset.instgrmVersion = '14';
-      quote.style.maxWidth = '540px';
-      quote.style.minWidth = '0';
-      quote.style.width = '100%';
-      const emblem = document.createElement('img');
-      emblem.src = 'assets/logo-emblem.svg';
-      emblem.alt = '';
-      emblem.width = 160;
-      emblem.height = 92;
-      const heading = document.createElement('p');
-      heading.textContent = 'Eyes of BC on Instagram';
-      const link = document.createElement('a');
-      link.href = url;
-      link.textContent = 'View this post on Instagram ↗';
-      const profileLink = document.createElement('a');
-      profileLink.href = 'https://www.instagram.com/eyesofbritishcolumbia/';
-      profileLink.textContent = 'Instagram profile (@eyesofbritishcolumbia) ↗';
-      quote.append(emblem, heading, link, profileLink);
-      panel.append(topline, quote);
+      panel.append(createCard(url));
       grid.append(panel);
+      return {panel, url};
     });
     if (fallback) fallback.hidden = true;
-    if (!('IntersectionObserver' in window)) { loadEmbeds(); return; }
+    if (!('IntersectionObserver' in window)) { loadEmbeds(panels); return; }
     const observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return;
       observer.disconnect();
-      loadEmbeds();
+      loadEmbeds(panels);
     }, {rootMargin: '600px 0px'});
     observer.observe(section);
   }
@@ -301,7 +316,9 @@ async function setupMap() {
     const points = shown.filter(coordinates).map(item => [item.lat, item.lon]);
     if (map && points.length) map.fitBounds(points, {padding: [45, 45], maxZoom: 12});
     else if (map) map.setView([53.5, -124], 5);
+    if (map) requestAnimationFrame(() => map.invalidateSize());
   }
+  if (map) window.addEventListener('resize', () => map.invalidateSize());
   try {
     const response = await fetch('data/providers.json');
     if (!response.ok) throw new Error('data');

@@ -1,7 +1,7 @@
 "use strict";
 initTheme();
 if (document.querySelector('#map')) setupMap();
-if (document.querySelector('#bc-map')) setupHomeMap();
+if (document.querySelector('#bc-map')) initCommunityMap();
 initNavigation();
 initMotion();
 initInstagram();
@@ -337,133 +337,50 @@ async function setupMap() {
   }
 }
 
-function setupHomeMap() {
-  if (!window.L) return;
-  const header = document.querySelector('header');
-  const syncHeaderHeight = () => {
-    if (!header) return;
-    document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
-  };
-  syncHeaderHeight();
-
-  const communities = [
-    { name: 'Fort St. John', note: 'Northern BC outreach', lat: 56.2465, lon: -120.8476 },
-    { name: 'Dawson Creek', note: 'Rural eye health', lat: 55.7596, lon: -120.2377 },
-    { name: 'Tumbler Ridge', note: 'Rural outreach', lat: 55.1281, lon: -120.9964 },
-    { name: 'Chetwynd', note: 'Northern BC eye health', lat: 55.6976, lon: -121.6295 },
-    { name: 'Agassiz', note: 'National Rural Health Week, October 2026', lat: 49.2392, lon: -121.7661 },
-    { name: 'Abbotsford', note: 'Archway Community Services workshop', lat: 49.0504, lon: -122.3045 },
-    { name: 'Richmond', note: 'Hoop for Sight, Richmond Olympic Oval', lat: 49.1666, lon: -123.1336 },
-    { name: 'Vancouver', note: 'Science World', lat: 49.2827, lon: -123.1207 }
-  ];
-
-  const map = L.map('bc-map', { scrollWheelZoom: false, zoomControl: false }).setView([53.5, -124], 5);
-  L.control.zoom({ position: 'topright' }).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
-  }).addTo(map);
-
-  const makePinIcon = active => L.divIcon({
-    className: active ? 'bc-pin is-active' : 'bc-pin',
-    iconSize: active ? [28, 28] : [18, 18],
-    iconAnchor: active ? [14, 14] : [9, 9],
-    tooltipAnchor: active ? [0, -14] : [0, -10]
-  });
-  const defaultIcon = makePinIcon(false);
-  const activeIcon = makePinIcon(true);
-
-  const listItems = [...document.querySelectorAll('.reached-list li')];
-  const itemByName = new Map(listItems.map(li => [li.querySelector('strong')?.textContent.trim().toLowerCase(), li]));
-
-  const bounds = [];
-  const entries = [];
-  let activeIndex = -1;
-  let lockedIndex = -1;
-
-  const applyHighlight = (index, active) => {
-    const entry = entries[index];
-    if (!entry) return;
-    entry.marker.setIcon(active ? activeIcon : defaultIcon);
-    entry.marker.setZIndexOffset(active ? 1000 : 0);
-    if (active) entry.marker.openTooltip();
-    else entry.marker.closeTooltip();
-    if (entry.li) entry.li.classList.toggle('is-active', active);
-  };
-
-  const syncActive = nextIndex => {
-    if (activeIndex === nextIndex) return;
-    if (activeIndex !== -1) applyHighlight(activeIndex, false);
-    activeIndex = nextIndex;
-    if (activeIndex !== -1) applyHighlight(activeIndex, true);
-  };
-
-  communities.forEach((item, index) => {
-    const popup = document.createElement('div');
-    const title = document.createElement('strong');
-    title.textContent = item.name;
-    const desc = document.createElement('p');
-    desc.textContent = item.note;
-    popup.append(title, desc);
-
-    const tooltip = document.createElement('div');
-    const tipTitle = document.createElement('strong');
-    tipTitle.textContent = item.name;
-    const tipNote = document.createElement('span');
-    tipNote.textContent = ` · ${item.note}`;
-    tooltip.append(tipTitle, tipNote);
-
-    const marker = L.marker([item.lat, item.lon], {
-      icon: defaultIcon,
-      alt: item.name,
-      title: item.name
-    }).addTo(map).bindPopup(popup).bindTooltip(tooltip, {
-      direction: 'top',
-      className: 'bc-map-tooltip'
+function initCommunityMap() {
+  const map = document.querySelector('#bc-map');
+  const items = [...document.querySelectorAll('.reached-list li')];
+  const pins = [...map.querySelectorAll('.pin')];
+  const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  label.classList.add('pin-label');
+  label.setAttribute('aria-hidden', 'true');
+  map.append(label);
+  let locked = null;
+  function highlight(pin) {
+    pins.forEach(point => {
+      point.classList.toggle('is-active', point === pin);
+      point.setAttribute('r', point === pin ? '6.5' : '4.2');
     });
-
-    const li = itemByName.get(item.name.toLowerCase()) || null;
-    entries.push({ marker, li });
-    bounds.push([item.lat, item.lon]);
-
-    marker.on('mouseover', () => syncActive(index));
-    marker.on('mouseout', () => syncActive(lockedIndex));
-    marker.on('click', () => {
-      lockedIndex = index;
-      syncActive(index);
-    });
-
-    if (li) {
-      li.tabIndex = 0;
-      li.addEventListener('mouseenter', () => syncActive(index));
-      li.addEventListener('mouseleave', () => syncActive(lockedIndex));
-      li.addEventListener('focus', () => syncActive(index));
-      li.addEventListener('blur', () => syncActive(lockedIndex));
-      li.addEventListener('click', () => {
-        lockedIndex = lockedIndex === index ? -1 : index;
-        syncActive(lockedIndex);
-      });
-      li.addEventListener('keydown', event => {
+    items.forEach(item => item.classList.toggle('is-active', item.querySelector('strong').textContent.trim() === pin?.querySelector('title').textContent.trim()));
+    label.textContent = pin ? pin.querySelector('title').textContent.trim() : '';
+    if (!pin) return;
+    const x = Number(pin.getAttribute('cx'));
+    label.setAttribute('x', x > 240 ? x - 11 : x + 11);
+    label.setAttribute('y', Number(pin.getAttribute('cy')) - 9);
+    label.setAttribute('text-anchor', x > 240 ? 'end' : 'start');
+    pin.parentNode.append(pin);
+  }
+  pins.forEach(pin => {
+    const name = pin.querySelector('title').textContent.trim();
+    const item = items.find(row => row.querySelector('strong').textContent.trim() === name);
+    if (!item) return;
+    [pin, item].forEach(target => {
+      target.setAttribute('tabindex', '0');
+      target.addEventListener('mouseenter', () => highlight(pin));
+      target.addEventListener('mouseleave', () => highlight(locked));
+      target.addEventListener('focus', () => highlight(pin));
+      target.addEventListener('blur', () => highlight(locked));
+      const toggle = () => {
+        locked = locked === pin ? null : pin;
+        highlight(locked);
+      };
+      target.addEventListener('click', toggle);
+      target.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { locked = null; highlight(null); }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        lockedIndex = lockedIndex === index ? -1 : index;
-        syncActive(lockedIndex);
+        toggle();
       });
-    }
-  });
-
-  map.on('click', () => {
-    lockedIndex = -1;
-    syncActive(-1);
-  });
-
-  map.fitBounds(bounds, { padding: [40, 40] });
-  requestAnimationFrame(() => {
-    syncHeaderHeight();
-    map.invalidateSize();
-  });
-  window.addEventListener('resize', () => {
-    syncHeaderHeight();
-    map.invalidateSize();
+    });
   });
 }

@@ -1,0 +1,6 @@
+hero-landscape.svg: Vector Illustration of a Mountain Landscape with Pine Trees.svg, https://commons.wikimedia.org/wiki/File:Vector_Illustration_of_a_Mountain_Landscape_with_Pine_Trees.svg, CC0
+
+assets/bc-map.svg: low-poly map of British Columbia built from Statistics Canada 2021 census division boundary file lcd_000b21a_e (simplified, community pins at census subdivision centroids; Agassiz is placed at the centroid of the District of Kent). Contains information licensed under the Open Government Licence - Canada (https://open.canada.ca/en/open-government-licence-canada).
+
+logo-full.jpg, logo-emblem.png: Eyes of BC logo supplied by the user on 2026-11-16 (file "Karanvir Gill, UBCMD2026, Ophtho - 2026-11-16 05.52.37.jpg"); logo-emblem.png is a crop of the eye emblem from logo-full.jpg.
+favicon.png: crop of the round eye scene from logo-full.jpg.

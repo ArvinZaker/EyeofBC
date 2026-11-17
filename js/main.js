@@ -90,7 +90,7 @@ function initInstagram() {
     quote.dataset.instgrmVersion = '14';
     const eyebrow = document.createElement('p');
     eyebrow.className = 'eyebrow';
-    eyebrow.textContent = '@eyesofbritishcolumbia';
+    eyebrow.textContent = 'Instagram';
     const title = document.createElement('h3');
     title.textContent = 'Community update';
     const note = document.createElement('p');
@@ -339,6 +339,7 @@ async function setupMap() {
 
 function initCommunityMap() {
   const map = document.querySelector('#bc-map');
+  if (!map) return;
   const items = [...document.querySelectorAll('.reached-list li')];
   const pins = [...map.querySelectorAll('.pin')];
   const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -346,19 +347,19 @@ function initCommunityMap() {
   label.setAttribute('aria-hidden', 'true');
   map.append(label);
   let locked = null;
+  let focused = null;
   function highlight(pin) {
     pins.forEach(point => {
       point.classList.toggle('is-active', point === pin);
-      point.setAttribute('r', point === pin ? '6.5' : '4.2');
     });
     items.forEach(item => item.classList.toggle('is-active', item.querySelector('strong').textContent.trim() === pin?.querySelector('title').textContent.trim()));
     label.textContent = pin ? pin.querySelector('title').textContent.trim() : '';
     if (!pin) return;
-    const x = Number(pin.getAttribute('cx'));
-    label.setAttribute('x', x > 240 ? x - 11 : x + 11);
-    label.setAttribute('y', Number(pin.getAttribute('cy')) - 9);
+    const x = Number(pin.dataset.x);
+    const y = Number(pin.dataset.y);
+    label.setAttribute('x', x > 240 ? x - 12 : x + 12);
+    label.setAttribute('y', y - 14);
     label.setAttribute('text-anchor', x > 240 ? 'end' : 'start');
-    pin.parentNode.append(pin);
   }
   pins.forEach(pin => {
     const name = pin.querySelector('title').textContent.trim();
@@ -367,19 +368,25 @@ function initCommunityMap() {
     [pin, item].forEach(target => {
       target.setAttribute('tabindex', '0');
       target.addEventListener('mouseenter', () => highlight(pin));
-      target.addEventListener('mouseleave', () => highlight(locked));
-      target.addEventListener('focus', () => highlight(pin));
-      target.addEventListener('blur', () => highlight(locked));
-      const toggle = () => {
+      target.addEventListener('mouseleave', () => highlight(focused || locked));
+      target.addEventListener('focusin', () => { focused = pin; highlight(pin); });
+      target.addEventListener('focusout', event => {
+        if (target.contains(event.relatedTarget)) return;
+        focused = null;
+        highlight(locked);
+      });
+      const toggle = event => {
+        if (event.target.closest('a')) return;
         locked = locked === pin ? null : pin;
         highlight(locked);
       };
       target.addEventListener('click', toggle);
       target.addEventListener('keydown', event => {
-        if (event.key === 'Escape') { locked = null; highlight(null); }
+        if (event.key === 'Escape') { locked = null; highlight(null); return; }
+        if (event.target.closest('a')) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        toggle();
+        toggle(event);
       });
     });
   });

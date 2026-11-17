@@ -1,4 +1,4 @@
-hero-landscape.svg: Vector Illustration of a Mountain Landscape with Pine Trees.svg, https://commons.wikimedia.org/wiki/File:Vector_Illustration_of_a_Mountain_Landscape_with_Pine_Trees.svg, CC0
+hero-landscape.svg and mountain-pines-original.svg: Vector Illustration of a Mountain Landscape with Pine Trees, by Missaruthra, https://commons.wikimedia.org/wiki/File:Vector_Illustration_of_a_Mountain_Landscape_with_Pine_Trees.svg, CC0 (https://creativecommons.org/publicdomain/zero/1.0/deed.en). hero-landscape.svg has adapted colours.
 
 assets/bc-map.svg: low-poly map of British Columbia built from Statistics Canada 2021 census division boundary file lcd_000b21a_e (simplified, community pins at census subdivision centroids; Agassiz is placed at the centroid of the District of Kent). Contains information licensed under the Open Government Licence - Canada (https://open.canada.ca/en/open-government-licence-canada).
 

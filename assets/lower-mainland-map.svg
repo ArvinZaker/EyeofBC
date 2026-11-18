@@ -85,29 +85,10 @@
 </g>
 <g>
 <text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="177.4" y="180.1" text-anchor="start">Vancouver</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="162.3" y="88.5" text-anchor="middle">West Vancouver</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="249.6" y="128.2" text-anchor="middle">North Vancouver</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="219.4" y="213.0" text-anchor="middle">Burnaby</text>
 <path class="label-leader" fill="none" stroke="#0b2d4e" stroke-width="0.8" d="M133.5 228.0 L133.5 234.0"/>
 <text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="133.5" y="254.0" text-anchor="middle">Richmond</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="336.8" y="215.3" text-anchor="middle">Coquitlam</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="303.6" y="251.4" text-anchor="middle">Port Coquitlam</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="254.9" y="333.7" text-anchor="middle">Surrey</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="154.1" y="299.9" text-anchor="middle">Delta</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="321.8" y="401.0" text-anchor="middle">Langley</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="389.9" y="302.0" text-anchor="middle">Maple Ridge</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="465.0" y="347.1" text-anchor="middle">Mission</text>
 <text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="413.4" y="453.3" text-anchor="end">Abbotsford</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="640.4" y="498.6" text-anchor="middle">Chilliwack</text>
 <text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="660.1" y="442.3" text-anchor="end">Agassiz</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="851.2" y="441.0" text-anchor="middle">Hope</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="211.4" y="381.2" text-anchor="middle">White Rock</text>
-<path class="label-leader" fill="none" stroke="#0b2d4e" stroke-width="0.8" d="M225.8 238.4 L176.3 313.4"/>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="90.8" y="333.4" text-anchor="middle">New Westminster</text>
-<path class="label-leader" fill="none" stroke="#0b2d4e" stroke-width="0.8" d="M337.2 257.6 L403.2 227.6"/>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="472.2" y="222.6" text-anchor="middle">Pitt Meadows</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="289.1" y="186.9" text-anchor="start">Port Moody</text>
-<text class="place" fill="#0b2d4e" stroke="#f8f5ee" stroke-width="3" paint-order="stroke" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="600" x="715.3" y="400.9" text-anchor="middle">Harrison Hot Springs</text>
 </g>
 <g>
 <g class="place-pin" data-community="Agassiz" transform="translate(710.8 435.4)"><path class="pin-shape" fill="#ddaa4c" stroke="#0b2d4e" stroke-width="1.4" fill-rule="evenodd" d="M 0 0 C -3.2 -6 -7.5 -10.3 -7.5 -15 A 7.5 7.5 0 1 1 7.5 -15 C 7.5 -10.3 3.2 -6 0 0 Z M 0 -18 A 3 3 0 1 0 0 -12 A 3 3 0 1 0 0 -18 Z"/><title>Agassiz</title></g>

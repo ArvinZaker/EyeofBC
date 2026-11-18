@@ -95,29 +95,12 @@ for (name in reached) {
 }
 pin_lines <- c(pin_lines, '</g>')
 
-# Municipality labels (required places first, then extras that fit without overlap)
+# Municipality labels (only communities with a pin)
 label_specs <- list(
   list(label = "Vancouver", lookup = "Vancouver", type = "CY"),
-  list(label = "West Vancouver", lookup = "West Vancouver", type = "DM"),
-  list(label = "North Vancouver", lookup = "North Vancouver", type = "DM"),
-  list(label = "Burnaby", lookup = "Burnaby", type = "CY"),
   list(label = "Richmond", lookup = "Richmond", type = "CY"),
-  list(label = "Coquitlam", lookup = "Coquitlam", type = "CY"),
-  list(label = "Port Coquitlam", lookup = "Port Coquitlam", type = "CY"),
-  list(label = "Surrey", lookup = "Surrey", type = "CY"),
-  list(label = "Delta", lookup = "Delta", type = "CY"),
-  list(label = "Langley", lookup = "Langley", type = "DM"),
-  list(label = "Maple Ridge", lookup = "Maple Ridge", type = "CY"),
-  list(label = "Mission", lookup = "Mission", type = "DM"),
   list(label = "Abbotsford", lookup = "Abbotsford", type = "CY"),
-  list(label = "Chilliwack", lookup = "Chilliwack", type = "CY"),
-  list(label = "Agassiz", lookup = "Kent", type = "DM"),
-  list(label = "Hope", lookup = "Hope", type = "DM"),
-  list(label = "White Rock", lookup = "White Rock", type = "CY"),
-  list(label = "New Westminster", lookup = "New Westminster", type = "CY"),
-  list(label = "Pitt Meadows", lookup = "Pitt Meadows", type = "CY"),
-  list(label = "Port Moody", lookup = "Port Moody", type = "CY"),
-  list(label = "Harrison Hot Springs", lookup = "Harrison Hot Springs", type = "VL")
+  list(label = "Agassiz", lookup = "Kent", type = "DM")
 )
 
 boxes_overlap <- function(a, b, pad = 2) {
@@ -208,7 +191,7 @@ if (length(label_boxes) > 1) {
   }
 }
 
-stopifnot(all(vapply(label_specs[1:16], function(spec) spec$label %in% placed_names, logical(1))), overlap_count == 0L)
+stopifnot(all(vapply(label_specs, function(spec) spec$label %in% placed_names, logical(1))), overlap_count == 0L)
 lines <- c(lines, label_lines, pin_lines, '</svg>')
 writeLines(lines, "assets/lower-mainland-map.svg")
 

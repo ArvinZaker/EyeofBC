@@ -4,3 +4,5 @@ assets/bc-map.svg: low-poly map of British Columbia built from Statistics Canada
 
 logo-full.jpg, logo-emblem.png: Eyes of BC logo supplied by the user on 2026-11-16 (file "Karanvir Gill, UBCMD2026, Ophtho - 2026-11-16 05.52.37.jpg"); logo-emblem.png is a crop of the eye emblem from logo-full.jpg.
 favicon.png: crop of the round eye scene from logo-full.jpg.
+
+assets/lower-mainland-map.svg: census subdivision boundaries from Statistics Canada 2021 Census subdivision boundary file lcsd000b21a_e, simplified and projected to NAD83 / Statistics Canada Lambert (EPSG:3347). Contains information licensed under the Open Government Licence - Canada (https://open.canada.ca/en/open-government-licence-canada).

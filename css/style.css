@@ -579,3 +579,30 @@ body:not(.home) .card p + p { margin-top:.65rem; }
 @media (max-width:760px) {
   body:not(.home) .stat-grid { grid-template-columns:minmax(0,1fr); gap:1rem; }
 }
+.map-stage { width:100%; max-width:100%; grid-column:2; grid-row:1; min-width:0; position:relative; }
+.map-stage > div { transform-origin:center; }
+.map-stage > div.map-view-enter { animation:map-view-in .48s ease both; }
+@keyframes map-view-in { from { opacity:.45; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+.map-stage #lower-mainland-view svg { display:block; width:100%; height:auto; max-height:720px; }
+#back-to-bc { position:absolute; z-index:2; top:.75rem; left:.75rem; }
+.cluster-pin { cursor:pointer; }
+.cluster-pin path { fill:var(--gold); stroke:var(--navy); stroke-width:1.5; }
+.cluster-pin text { fill:var(--navy); font:700 10px system-ui,sans-serif; text-anchor:middle; pointer-events:none; }
+.cluster-pin:focus-visible { outline:none; }
+.cluster-pin:focus-visible path { stroke-width:3; }
+@media (prefers-reduced-motion: reduce) { .map-stage > div { animation:none !important; transition:none !important; } }
+
+/* Regional map inherits the same light and dark map palette as BC. */
+.lower-mainland-map .cd { stroke:var(--map-edge); stroke-width:1.2; stroke-linejoin:round; }
+.lower-mainland-map .s0 { fill:var(--map-a); }
+.lower-mainland-map .s1 { fill:var(--map-b); }
+.lower-mainland-map .s2 { fill:var(--map-c); }
+.lower-mainland-map .s3 { fill:var(--map-d); }
+.lower-mainland-map .place { fill:var(--heading); stroke:var(--map-edge); stroke-width:3; paint-order:stroke; }
+.lower-mainland-map .label-leader { stroke:var(--map-pin); }
+.lower-mainland-map .pin-shape { fill:var(--gold); stroke:var(--map-pin); }
+.lower-mainland-map .place-pin { cursor:pointer; }
+.lower-mainland-map .place-pin.is-active .pin-shape,
+.lower-mainland-map .place-pin:focus-visible .pin-shape { stroke-width:3; }
+#lower-mainland-view { width:100%; max-width:100%; min-width:0; overflow-x:auto; padding-top:3.5rem; }
+.map-stage #lower-mainland-view svg { min-width:720px; }

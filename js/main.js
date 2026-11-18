@@ -337,26 +337,132 @@ async function setupMap() {
   }
 }
 
+function clusterPins(pins, distance = 13) {
+  const groups = pins.map(pin => ({x: Number(pin.dataset.x), y: Number(pin.dataset.y), pins: [pin]}));
+  for (let i = 0; i < groups.length; i++) {
+    for (let j = i + 1; j < groups.length; j++) {
+      if (!groups[i].pins.some(a => groups[j].pins.some(b =>
+        Math.hypot(Number(a.dataset.x) - Number(b.dataset.x), Number(a.dataset.y) - Number(b.dataset.y)) <= distance))) continue;
+      groups[i].pins.push(...groups[j].pins);
+      groups.splice(j, 1);
+      i = -1;
+      break;
+    }
+  }
+  return groups;
+}
+
+function clusterCountText(group) { return String(group.pins.length); }
+
+function createMapViewController(bcView, lowerView, back, reducedMotion) {
+  return next => {
+    bcView.hidden = next !== 'bc';
+    lowerView.hidden = next !== 'lower';
+    back.hidden = next !== 'lower';
+    if (reducedMotion) return;
+    const target = next === 'lower' ? lowerView : bcView;
+    target.classList.remove('map-view-enter');
+    void target.offsetWidth;
+    target.classList.add('map-view-enter');
+  };
+}
+
 function initCommunityMap() {
   const map = document.querySelector('#bc-map');
   if (!map) return;
   const items = [...document.querySelectorAll('.reached-list li')];
   const pins = [...map.querySelectorAll('.pin')];
+  const bcView = document.querySelector('#bc-view');
+  const lowerView = document.querySelector('#lower-mainland-view');
+  const back = document.querySelector('#back-to-bc');
+  let lowerSvg, locked = null, focused = null;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const changeView = createMapViewController(bcView, lowerView, back, reducedMotion);
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  bcView.parentElement.append(status);
+  lowerView.setAttribute('tabindex', '-1');
+  let trigger = null, triggerPins = [], pending = false, failed = false;
+  function visibleTrigger() {
+    if (trigger && (bcView.contains(trigger) || items.includes(trigger)) && trigger.getAttribute('display') !== 'none') return trigger;
+    return [...map.querySelectorAll('.cluster-pin')].find(marker =>
+      marker.members.some(pin => triggerPins.includes(pin))) ||
+      triggerPins.find(pin => pin.getAttribute('display') !== 'none') ||
+      map.querySelector('.cluster-pin') || pins.find(pin => pin.getAttribute('display') !== 'none');
+  }
+  function setView(next, source) {
+    if (next === 'lower') {
+      if (source) {
+        trigger = source;
+        triggerPins = source.members || (pins.includes(source) ? [source] : []);
+      }
+      if (!lowerSvg) {
+        pending = !failed;
+        status.textContent = failed ? 'Regional map could not load.' : 'Loading regional map…';
+        return;
+      }
+      pending = false;
+      status.textContent = '';
+      changeView('lower');
+      back.focus();
+      if (document.activeElement !== back) lowerView.focus();
+    } else {
+      pending = false;
+      const returning = bcView.hidden;
+      changeView('bc');
+      if (returning) visibleTrigger()?.focus();
+    }
+  }
+  window.setCommunityMapView = setView;
+  function renderClusters() {
+    const activeMembers = document.activeElement?.members;
+    map.querySelectorAll('.cluster-pin').forEach(marker => marker.remove());
+    pins.forEach(pin => { pin.removeAttribute('display'); pin.setAttribute('tabindex', '0'); });
+    const scale = map.getBoundingClientRect().width / 400 || 1;
+    const groups = clusterPins(pins, 16 / scale);
+    groups.forEach(group => {
+      if (group.pins.length === 1) return;
+      group.pins.forEach(pin => { pin.setAttribute('display', 'none'); pin.setAttribute('tabindex', '-1'); });
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      marker.classList.add('cluster-pin');
+      marker.members = group.pins;
+      marker.setAttribute('transform', `translate(${group.x} ${group.y})`);
+      marker.setAttribute('tabindex', '0');
+      marker.setAttribute('role', 'button');
+      marker.setAttribute('aria-label', `${group.pins.length} communities in Lower Mainland and Fraser Valley. Open regional map.`);
+      const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      shape.setAttribute('d', 'M0 0C-4-6-11-13-11-20A11 11 0 1 1 11-20C11-13 4-6 0 0Z');
+      const count = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      count.setAttribute('y', '-17');
+      count.textContent = clusterCountText(group);
+      marker.append(shape, count);
+      const open = () => setView('lower', marker);
+      marker.addEventListener('click', open);
+      marker.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+      });
+      map.append(marker);
+    });
+    if (activeMembers && !bcView.hidden) {
+      const replacement = [...map.querySelectorAll('.cluster-pin')].find(marker =>
+        marker.members.some(pin => activeMembers.includes(pin))) ||
+        activeMembers.find(pin => pin.getAttribute('display') !== 'none');
+      replacement?.focus();
+    }
+  }
+  renderClusters();
+  if ('ResizeObserver' in window) new ResizeObserver(renderClusters).observe(map);
   const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   label.classList.add('pin-label');
   label.setAttribute('aria-hidden', 'true');
   map.append(label);
-  let locked = null;
-  let focused = null;
   function highlight(pin) {
-    pins.forEach(point => {
-      point.classList.toggle('is-active', point === pin);
-    });
+    pins.forEach(point => point.classList.toggle('is-active', point === pin));
+    lowerSvg?.querySelectorAll('.place-pin').forEach(point => point.classList.toggle('is-active', point.dataset.community === pin?.querySelector('title').textContent.trim()));
     items.forEach(item => item.classList.toggle('is-active', item.querySelector('strong').textContent.trim() === pin?.querySelector('title').textContent.trim()));
     label.textContent = pin ? pin.querySelector('title').textContent.trim() : '';
     if (!pin) return;
-    const x = Number(pin.dataset.x);
-    const y = Number(pin.dataset.y);
+    const x = Number(pin.dataset.x), y = Number(pin.dataset.y);
     label.setAttribute('x', x > 240 ? x - 12 : x + 12);
     label.setAttribute('y', y - 14);
     label.setAttribute('text-anchor', x > 240 ? 'end' : 'start');
@@ -366,7 +472,7 @@ function initCommunityMap() {
     const item = items.find(row => row.querySelector('strong').textContent.trim() === name);
     if (!item) return;
     [pin, item].forEach(target => {
-      target.setAttribute('tabindex', '0');
+      target.setAttribute('tabindex', target.getAttribute('display') === 'none' ? '-1' : '0');
       target.addEventListener('mouseenter', () => highlight(pin));
       target.addEventListener('mouseleave', () => highlight(focused || locked));
       target.addEventListener('focusin', () => { focused = pin; highlight(pin); });
@@ -389,5 +495,48 @@ function initCommunityMap() {
         toggle(event);
       });
     });
+    item.addEventListener('click', event => {
+      if (event.target.closest('a')) return;
+      setView(['Agassiz', 'Abbotsford', 'Richmond', 'Vancouver'].includes(name) ? 'lower' : 'bc', item);
+    });
+    item.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('a')) setView(['Agassiz', 'Abbotsford', 'Richmond', 'Vancouver'].includes(name) ? 'lower' : 'bc', item);
+    });
+  });
+  back.addEventListener('click', () => setView('bc'));
+  fetch('assets/lower-mainland-map.svg').then(response => {
+    if (!response.ok) throw new Error('Regional map');
+    return response.text();
+  }).then(svg => {
+    const holder = document.createElement('div');
+    holder.innerHTML = svg;
+    lowerSvg = holder.querySelector('svg');
+    if (!lowerSvg || holder.querySelector('parsererror')) throw new Error('Regional SVG');
+    lowerView.replaceChildren(lowerSvg);
+    lowerSvg.querySelectorAll('.place-pin').forEach(marker => {
+      const name = marker.dataset.community;
+      const item = items.find(row => row.querySelector('strong').textContent.trim() === name);
+      if (!item) return;
+      marker.setAttribute('tabindex', '0');
+      marker.setAttribute('role', 'button');
+      marker.setAttribute('aria-label', `Show ${name} event`);
+      const sourcePin = pins.find(pin => pin.querySelector('title').textContent.trim() === name);
+      marker.addEventListener('mouseenter', () => highlight(sourcePin));
+      marker.addEventListener('mouseleave', () => highlight(focused || locked));
+      marker.addEventListener('focusin', () => highlight(sourcePin));
+      marker.addEventListener('focusout', () => highlight(focused || locked));
+      const activate = () => { locked = sourcePin; highlight(sourcePin); item.focus(); };
+      marker.addEventListener('click', activate);
+      marker.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); }
+      });
+    });
+    highlight(focused || locked);
+    if (pending) setView('lower');
+  }).catch(() => {
+    lowerSvg = null;
+    failed = true;
+    pending = false;
+    status.textContent = 'Regional map could not load.';
   });
 }
